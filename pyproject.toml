@@ -17,6 +17,10 @@ dependencies = [
     "uvicorn (>=0.34.3,<0.35.0)"
 ]
 
+[tool.taskipy.tasks]
+format = "ruff format --preview ."
+lint = "ruff check --fix --exit-non-zero-on-fix"
+dev = "uvicorn webserver:app --port 8080 --host 0.0.0.0 --reload"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
