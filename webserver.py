@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes.router import router
+from pfsw_gestao.routes.router import router
 
 
 app = FastAPI(title='Gestão de Código', version='0.0.1')
