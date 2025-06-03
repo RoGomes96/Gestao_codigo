@@ -1,11 +1,11 @@
 import pytest
 from fastapi.testclient import TestClient
 from webserver import app
+
 client = TestClient(app)
 
 
-class TestUserEndpoint:
-
+class TestCreateUserEndpoint:
     def setup_method(self):
         global database
         database = []
@@ -17,7 +17,7 @@ class TestUserEndpoint:
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example"
+            "password": "password@example",
         }
 
         # Act
@@ -38,7 +38,7 @@ class TestUserEndpoint:
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example"
+            "password": "password@example",
         }
         client.post("/user", json=user_data)
 

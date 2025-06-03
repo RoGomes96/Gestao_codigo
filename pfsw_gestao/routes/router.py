@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path
-from pfsw_gestao.schemas import UserDB, UserList, UserItem
+from pfsw_gestao.schemas import UserDB, UserItemUpdate, UserList, UserItem
 from pfsw_gestao.schemas import UserOperations, UserPublic
 from pydantic import TypeAdapter
 
@@ -12,10 +12,8 @@ async def list_user():
     """
     Operação de Listagem de todos os usuários da base.
     """
-    user = UserItem(username="Rodrigo ",
-                    first_name="Rodrigo", last_name="Gomes")
-    response = UserList(
-        status_code=200, message="Lista de usuários", items=[user])
+    user = [UserPublic(**user.__dict__) for user in database]
+    response = UserList(status_code=200, message="Lista de usuários", items=user)
     return TypeAdapter(UserList).dump_python(response, by_alias=True)
 
 
@@ -37,11 +35,41 @@ async def create_user(user: UserItem):
 
 
 @router.patch("/user/{id}", response_model=UserOperations)
-async def update_partial_user(id: int = Path()):
+async def update_partial_user(id: int, user_update: UserItemUpdate):
     """
     Operação de update parcial de usuários na base.
     """
-    return {"status_code": 200, "message": "Usuário Atualizado com sucesso"}
+    existing_user = None
+    for user in database:
+        if user.id == id:
+            existing_user = user
+            break
+    if existing_user is None:
+        raise HTTPException(
+            status_code=400, detail="Usuário não existe na base de dados."
+        )
+
+    try:
+        if user_update.username is not None:
+            existing_user.username = user_update.username
+        if user_update.first_name is not None:
+            existing_user.first_name = user_update.first_name
+        if user_update.last_name is not None:
+            existing_user.last_name = user_update.last_name
+        if user_update.email is not None:
+            existing_user.email = user_update.email
+        if user_update.phone_number is not None:
+            existing_user.phone_number = user_update.phone_number
+        if user_update.address is not None:
+            existing_user.address = user_update.address
+
+        return {
+            "status_code": 200,
+            "message": "Usuário Atualizado com sucesso",
+            "new_item": existing_user,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/user/{id}", response_model=UserOperations)
