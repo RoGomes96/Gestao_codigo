@@ -17,7 +17,7 @@ class TestCreateUserEndpoint:
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example",
+            "password": "password@example"
         }
 
         # Act
@@ -38,7 +38,7 @@ class TestCreateUserEndpoint:
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example",
+            "password": "password@example"
         }
         client.post("/user", json=user_data)
 

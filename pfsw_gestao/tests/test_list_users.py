@@ -5,7 +5,7 @@ from webserver import app
 client = TestClient(app)
 
 
-class TestCreateUserEndpoint:
+class TestListUserEndpoint:
     def setup_method(self):
         global database
         database = []
@@ -17,11 +17,12 @@ class TestCreateUserEndpoint:
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "phone_number": 0,
+            "password": "password@example",
+            "phone_number": 0
         }
 
         client.post("/user", json=user_data)
-
+        print(client)
         # Act
         response = client.get("/user")
 

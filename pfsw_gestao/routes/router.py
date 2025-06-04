@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Path
 from pfsw_gestao.schemas import UserDB, UserItemUpdate, UserList, UserItem
 from pfsw_gestao.schemas import UserOperations, UserPublic
-from pydantic import TypeAdapter
+from pydantic import EmailStr, TypeAdapter
 
 router = APIRouter()
 database = []
@@ -73,16 +73,43 @@ async def update_partial_user(id: int, user_update: UserItemUpdate):
 
 
 @router.put("/user/{id}", response_model=UserOperations)
-async def update_full_user(id: int = Path()):
+async def update_full_user(id: int, update_user: UserItem):
     """
     Operação de update total de usuários na base.
     """
-    return {"status_code": 200, "message": "Usuário Atualizado com sucesso"}
+    existing_user = None
+    for user in database:
+        if user.id == id:
+            existing_user = user
+            database.remove(user)
+            break
+    if existing_user is None:
+        raise HTTPException(
+            status_code=400, detail="Usuário não existe na base de dados."
+        )
+
+    user_with_id = UserDB(**update_user.model_dump(), id=id)
+    database.append(user_with_id)
+    return {
+        "status_code": 200,
+        "message": "Usuário Atualizado com sucesso",
+        "new_item": user_with_id,
+    }
 
 
-@router.delete("/user/{id}", response_model=UserOperations)
+@router.delete("/user/{id}")
 async def delete_user(id: int = Path()):
     """
     Operação de delete de usuários na base.
     """
+    existing_user = None
+    for user in database:
+        if user.id == id:
+            database.remove(user)
+            existing_user = True
+            break
+    if existing_user is None:
+        raise HTTPException(
+            status_code=400, detail="Usuário não existe na base de dados."
+        )
     return {"status_code": 200, "message": "Usuário Deletado com sucesso"}
