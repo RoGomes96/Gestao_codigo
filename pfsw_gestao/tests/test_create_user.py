@@ -1,23 +1,16 @@
-import pytest
-from fastapi.testclient import TestClient
-from webserver import app
-
-client = TestClient(app)
-
-
 class TestCreateUserEndpoint:
     def setup_method(self):
         global database
         database = []
 
-    def test_create_user_success(self):
+    def test_create_user_success(self, client):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example"
+            "password": "password@example",
         }
 
         # Act
@@ -31,14 +24,14 @@ class TestCreateUserEndpoint:
         assert response.json()["email"] == user_data["email"]
         assert response.json()["phone_number"] == 0
 
-    def test_create_user_fail(self):
+    def test_create_user_fail(self, client):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
-            "password": "password@example"
+            "password": "password@example",
         }
         client.post("/user", json=user_data)
 

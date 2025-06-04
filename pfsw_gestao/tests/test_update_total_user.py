@@ -1,16 +1,9 @@
-import pytest
-from fastapi.testclient import TestClient
-from webserver import app
-
-client = TestClient(app)
-
-
 class TestUpdateTotalUserEndpoint:
     def setup_method(self):
         global database
         database = []
 
-    def test_update_total_user_sucess(self):
+    def test_update_total_user_sucess(self, client):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -18,7 +11,7 @@ class TestUpdateTotalUserEndpoint:
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
             "password": "password@example",
-            "phone_number": 1234
+            "phone_number": 1234,
         }
 
         client.post("/user", json=user_data)
@@ -29,7 +22,7 @@ class TestUpdateTotalUserEndpoint:
             "email": "rogomes@example.com",
             "password": "password@example2",
             "phone_number": 11123456789,
-            "address": "Rua Teste Update"
+            "address": "Rua Teste Update",
         }
 
         # Act
@@ -43,7 +36,7 @@ class TestUpdateTotalUserEndpoint:
         assert response.json()["new_item"]["address"] == "Rua Teste Update"
         assert response.json()["message"] == "Usuário Atualizado com sucesso"
 
-    def test_update_total_user_fail(self):
+    def test_update_total_user_fail(self, client):
         # Arrange
         user_update_data = {
             "username": "RoGomes",
@@ -52,7 +45,7 @@ class TestUpdateTotalUserEndpoint:
             "email": "rogomes@example.com",
             "password": "password@example2",
             "phone_number": 11123456789,
-            "address": "Rua Teste Update"
+            "address": "Rua Teste Update",
         }
 
         # Act
@@ -62,14 +55,14 @@ class TestUpdateTotalUserEndpoint:
         assert response.status_code == 400
         assert response.json()["detail"] == "Usuário não existe na base de dados."
 
-    def test_update_total_user_bad_request(self):
+    def test_update_total_user_bad_request(self, client):
         # Arrange
         user_update_data = {
             "username": "RoGomes",
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "phone_number": 11123456789,
-            "address": "Rua Teste Update"
+            "address": "Rua Teste Update",
         }
 
         # Act

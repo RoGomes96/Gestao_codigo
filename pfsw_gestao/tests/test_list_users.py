@@ -1,16 +1,9 @@
-import pytest
-from fastapi.testclient import TestClient
-from webserver import app
-
-client = TestClient(app)
-
-
 class TestListUserEndpoint:
     def setup_method(self):
         global database
         database = []
 
-    def test_list_users(self):
+    def test_list_users(self, client):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -18,11 +11,10 @@ class TestListUserEndpoint:
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
             "password": "password@example",
-            "phone_number": 0
+            "phone_number": 0,
         }
 
         client.post("/user", json=user_data)
-        print(client)
         # Act
         response = client.get("/user")
 
