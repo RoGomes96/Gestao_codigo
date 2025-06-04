@@ -2,16 +2,15 @@
 
 ### Feat
 
-- Realização de testes unitarios dos endpoints de uptade total e delete, e implementações nas rotas
-- Criação de testes para listagem de usuarios e para update parcial de usuarios. E inclusão de funcionalidades nessas rotas
-- Criação de testes e implementação de rota de criação de usuário
+- **Rota de update total e delete**: Realização de testes unitarios dos endpoints de uptade total e delete, e implementações nas rotas.
+- **Rota de listagem e update parcial**: Criação de testes para listagem de usuarios e para update parcial de usuarios. E inclusão de funcionalidades nessas rotas
+- **Rota de criação de usuário**: Criação de testes e implementação de rota de criação de usuário
 
 ## 0.1.1 (2025-06-02)
 
 ### Fix
 
-- Ajuste de CHANGELOG
-- Inclusão de tag de versionamento
+- **Api Nome e versão**: Inclusão de nome e tag de versionamento
 
 ## 0.1.0 (2025-06-02)
 
@@ -23,4 +22,5 @@
 
 ### Fix
 
-- Inclusão de arquivos de inicialização
+- **inicialização**:Inclusão de arquivos de inicialização
+
