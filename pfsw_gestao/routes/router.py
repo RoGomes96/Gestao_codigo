@@ -1,7 +1,8 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Path
 from pfsw_gestao.schemas import UserDB, UserItemUpdate, UserList, UserItem
 from pfsw_gestao.schemas import UserOperations, UserPublic
-from pydantic import EmailStr, TypeAdapter
+from pydantic import TypeAdapter
 
 router = APIRouter()
 database = []

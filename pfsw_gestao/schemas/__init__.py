@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, field_validator
 from pydantic.dataclasses import dataclass
 from typing import List, Optional
@@ -11,6 +12,7 @@ class UserItem(BaseModel):
     password: str
     phone_number: Optional[int] = 0
     address: Optional[str] = None
+    created_at: Optional[datetime] = datetime.utcnow()
 
 
 class UserDB(UserItem):
@@ -41,6 +43,7 @@ class UserPublic:
     last_name: str
     email: EmailStr
     phone_number: Optional[int] = None
+    created_at: Optional[datetime] = datetime.utcnow()
 
 
 @dataclass

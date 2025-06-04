@@ -1,17 +1,9 @@
-import pytest
-from fastapi.testclient import TestClient
-from webserver import app
-
-client = TestClient(app)
-
-
 class TestDeleteUserEndpoint:
     def setup_method(self):
         global database
         database = []
 
-    def test_delete_user_sucess(self):
-
+    def test_delete_user_sucess(self, client):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -19,7 +11,7 @@ class TestDeleteUserEndpoint:
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
             "password": "password@example",
-            "phone_number": 1234
+            "phone_number": 1234,
         }
 
         client.post("/user", json=user_data)
@@ -31,8 +23,7 @@ class TestDeleteUserEndpoint:
         assert response.status_code == 200
         assert response.json()["message"] == "Usuário Deletado com sucesso"
 
-    def test_delete_user_fail(self):
-
+    def test_delete_user_fail(self, client):
         # Act
         response = client.delete("/user/1")
 
