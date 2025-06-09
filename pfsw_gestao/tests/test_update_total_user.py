@@ -44,7 +44,7 @@ class TestUpdateTotalUserEndpoint:
             "email": "rogomes@example.com",
             "password": "password@example2",
             "phone_number": 11123456789,
-            "address": "Rua Teste Update",
+            "address": "Rua Teste Update"
         }
 
         # Act
@@ -54,14 +54,14 @@ class TestUpdateTotalUserEndpoint:
         assert response.status_code == 400
         assert response.json()["detail"] == "Usuário não existe na base de dados."
 
-    def test_update_total_user_bad_request(self, client):
+    def test_update_total_user_bad_request(self, client, session: Session):
         # Arrange
         user_update_data = {
             "username": "RoGomes",
             "first_name": "Rodrigo",
             "last_name": "Gomes",
             "phone_number": 11123456789,
-            "address": "Rua Teste Update",
+            "address": "Rua Teste Update"
         }
 
         # Act

@@ -12,11 +12,15 @@ database = []
 
 
 @router.get("/user", response_model=UserList)
-async def list_user(session: Session = Depends(get_session)):
+async def list_user(
+    skip: int = 0,
+    limit: int = 100,
+    session: Session = Depends(get_session)
+):
     """
     Operação de Listagem de todos os usuários da base.
     """
-    users = session.query(User).all()
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
     user_data = [UserPublic(**user.__dict__) for user in users]
 
     response = UserList(
@@ -87,6 +91,7 @@ async def update_partial_user(
         if user_update.address is not None:
             user.address = user_update.address
         session.commit()
+        session.refresh(user)
         return {
             "status_code": 200,
             "message": "Usuário Atualizado com sucesso",
@@ -113,13 +118,20 @@ async def update_full_user(
             status_code=400, detail="Usuário não existe na base de dados."
         )
 
-    user_with_id = UserDB(**update_user.model_dump(), id=id)
-    database.append(user_with_id)
+    user.username = update_user.username
+    user.first_name = update_user.first_name
+    user.last_name = update_user.last_name
+    user.email = update_user.email
+    user.password = update_user.password
+    user.phone_number = update_user.phone_number
+    user.address = update_user.address
+
     session.commit()
+    session.refresh(user)
     return {
         "status_code": 200,
         "message": "Usuário Atualizado com sucesso",
-        "new_item": user_with_id,
+        "new_item": user,
     }
 
 
