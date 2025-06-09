@@ -12,7 +12,6 @@ class UserItem(BaseModel):
     password: str
     phone_number: Optional[int] = 0
     address: Optional[str] = None
-    created_at: Optional[datetime] = datetime.utcnow()
 
 
 class UserDB(UserItem):
@@ -35,8 +34,7 @@ def set_default_phone_number(cls, v):
     return v if v is not None else 0  # Retorna 0 se o valor for None
 
 
-@dataclass
-class UserPublic:
+class UserPublic(BaseModel):
     id: int
     username: str
     first_name: str
@@ -44,6 +42,9 @@ class UserPublic:
     email: EmailStr
     phone_number: Optional[int] = None
     created_at: Optional[datetime] = datetime.utcnow()
+
+    class Config:
+        from_attributes = True
 
 
 @dataclass

@@ -1,9 +1,8 @@
-class TestListUserEndpoint:
-    def setup_method(self):
-        global database
-        database = []
+from sqlalchemy.orm import Session
 
-    def test_list_users(self, client):
+
+class TestListUserEndpoint:
+    def test_list_users(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",

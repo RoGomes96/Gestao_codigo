@@ -1,9 +1,8 @@
-class TestCreateUserEndpoint:
-    def setup_method(self):
-        global database
-        database = []
+from sqlalchemy.orm import Session
 
-    def test_create_user_success(self, client):
+
+class TestCreateUserEndpoint:
+    def test_create_user_success(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -24,7 +23,7 @@ class TestCreateUserEndpoint:
         assert response.json()["email"] == user_data["email"]
         assert response.json()["phone_number"] == 0
 
-    def test_create_user_fail(self, client):
+    def test_create_user_fail(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",

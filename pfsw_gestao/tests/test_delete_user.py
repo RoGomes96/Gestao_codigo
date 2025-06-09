@@ -1,9 +1,13 @@
+from sqlalchemy.orm import Session
+from pfsw_gestao.models import User
+
+
 class TestDeleteUserEndpoint:
     def setup_method(self):
         global database
         database = []
 
-    def test_delete_user_sucess(self, client):
+    def test_delete_user_sucess(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",

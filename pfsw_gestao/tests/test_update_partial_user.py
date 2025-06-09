@@ -1,9 +1,8 @@
-class TestUpdatePartialUserEndpoint:
-    def setup_method(self):
-        global database
-        database = []
+from sqlalchemy.orm import Session
 
-    def test_update_partial_user_sucess(self, client):
+
+class TestUpdatePartialUserEndpoint:
+    def test_update_partial_user_sucess(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -15,7 +14,10 @@ class TestUpdatePartialUserEndpoint:
         }
 
         client.post("/user", json=user_data)
-        user_update_data = {"phone_number": 11123456789, "address": "Rua Teste Update"}
+        user_update_data = {
+            "phone_number": 11123456789,
+            "address": "Rua Teste Update"
+        }
 
         # Act
         response = client.patch("/user/1", json=user_update_data)
@@ -25,9 +27,12 @@ class TestUpdatePartialUserEndpoint:
         assert response.json()["new_item"]["address"] == "Rua Teste Update"
         assert response.json()["message"] == "Usuário Atualizado com sucesso"
 
-    def test_update_partial_user_fail(self, client):
+    def test_update_partial_user_fail(self, client, session: Session):
         # Arrange
-        user_update_data = {"phone_number": 11123456789, "address": "Rua Teste Update"}
+        user_update_data = {
+            "phone_number": 11123456789,
+            "address": "Rua Teste Update"
+        }
 
         # Act
         response = client.patch("/user/2", json=user_update_data)

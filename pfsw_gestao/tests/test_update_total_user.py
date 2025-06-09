@@ -1,9 +1,8 @@
-class TestUpdateTotalUserEndpoint:
-    def setup_method(self):
-        global database
-        database = []
+from sqlalchemy.orm import Session
 
-    def test_update_total_user_sucess(self, client):
+
+class TestUpdateTotalUserEndpoint:
+    def test_update_total_user_sucess(self, client, session: Session):
         # Arrange
         user_data = {
             "username": "RodrigoGomes",
@@ -36,7 +35,7 @@ class TestUpdateTotalUserEndpoint:
         assert response.json()["new_item"]["address"] == "Rua Teste Update"
         assert response.json()["message"] == "Usuário Atualizado com sucesso"
 
-    def test_update_total_user_fail(self, client):
+    def test_update_total_user_fail(self, client, session: Session):
         # Arrange
         user_update_data = {
             "username": "RoGomes",
