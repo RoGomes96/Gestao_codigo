@@ -1,15 +1,17 @@
-import pytest
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 from datetime import datetime
+from http import HTTPStatus
+
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker
 
 from pfsw_gestao.database import get_session
+from pfsw_gestao.models import table_registry
 from pfsw_gestao.models.models import User
 from pfsw_gestao.security import get_password_hash
 from webserver import app
-from pfsw_gestao.models import table_registry
 
 
 @pytest.fixture
@@ -45,7 +47,7 @@ def test_db():
     table_registry.metadata.drop_all(engine)  # Limpa ao final do teste
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def session(test_db):
     """Cria uma nova sessão para cada teste e limpa as tabelas."""
     connection = test_db.connect()
@@ -62,7 +64,7 @@ def session(test_db):
     connection.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def client(session):
     def override_get_db():
         yield session
@@ -94,10 +96,10 @@ def mock_db_time():
 @pytest.fixture
 def token(client, user):
     response = client.post(
-        f"/token/{user.id}",
+        f"/auth/token/{user.id}",
         data={"username": user.email, "password": "password@example"},
     )
-    if response.status_code != 200:
+    if response.status_code != HTTPStatus.OK:
         raise ValueError(
             f"Token request failed: {response.status_code}, {response.text}"
         )

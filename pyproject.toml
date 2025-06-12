@@ -24,6 +24,10 @@ dependencies = [
     "python-multipart (>=0.0.20,<0.0.21)"
 ]
 
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'FAST']
+
 [tool.taskipy.tasks]
 format = "ruff format --preview ."
 lint = "ruff check --fix --exit-non-zero-on-fix"

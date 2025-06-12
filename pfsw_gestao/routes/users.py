@@ -1,66 +1,45 @@
 from http import HTTPStatus
-from fastapi import (
-    APIRouter,
-    HTTPException,
-    Depends
-)
-from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from pfsw_gestao.database import get_session
 from pfsw_gestao.models.models import User
 from pfsw_gestao.schemas import (
-    Token,
+    FilterPage,
+    UserItem,
     UserItemFullUpdate,
     UserItemUpdate,
     UserList,
-    UserItem,
+    UserOperations,
+    UserPublic,
 )
-from pfsw_gestao.schemas import UserOperations, UserPublic
-from pfsw_gestao.database import get_session
 from pfsw_gestao.security import (
-    create_access_token,
     get_current_user,
     get_password_hash,
-    verify_password,
 )
 
-router = APIRouter()
-database = []
+Session = Annotated[Session, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
+router = APIRouter(prefix='/users', tags=['users'])
 
 
-@router.post("/token/{id}", response_model=Token)
-def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session),
-):
-    user = session.scalar(select(User).where(User.email == form_data.username))
-
-    if not user:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Incorrect email or password"
-        )
-
-    if not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Incorrect email or password"
-        )
-
-    access_token = create_access_token(data={"sub": user.email})
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.get("/user", response_model=UserList)
+@router.get("/", response_model=UserList)
 async def list_user(
-    skip: int = 0, limit: int = 100, session: Session = Depends(get_session)
+    session: Session,
+    filter_users: Annotated[FilterPage, Query()]
 ):
     """
     Operação de Listagem de todos os usuários da base.
     """
-    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+    users = session.scalars(
+        select(User)
+        .offset(filter_users.offset)
+        .limit(filter_users.limit)
+    ).all()
     user_data = [UserPublic(**user.__dict__) for user in users]
 
     response = UserList(
@@ -71,8 +50,8 @@ async def list_user(
     return response
 
 
-@router.post("/user", response_model=UserPublic, status_code=201)
-async def create_user(user: UserItem, session: Session = Depends(get_session)):
+@router.post("/", response_model=UserPublic, status_code=201)
+async def create_user(user: UserItem, session: Session):
     """
     Operação de criação de usuários na base.
     """
@@ -106,12 +85,12 @@ async def create_user(user: UserItem, session: Session = Depends(get_session)):
     return UserPublic.from_orm(user_db)
 
 
-@router.patch("/user/{id}", response_model=UserOperations)
+@router.patch("/{id}", response_model=UserOperations)
 async def update_partial_user(
     id: int,
     user_update: UserItemUpdate,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: Session,
+    current_user: CurrentUser,
 ):
     """
     Operação de update parcial de usuários na base.
@@ -153,12 +132,12 @@ async def update_partial_user(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/user/{id}", response_model=UserOperations)
+@router.put("/{id}", response_model=UserOperations)
 async def update_full_user(
     id: int,
     update_user: UserItemFullUpdate,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: Session,
+    current_user: CurrentUser,
 ):
     """
     Operação de update total de usuários na base.
@@ -197,11 +176,11 @@ async def update_full_user(
     }
 
 
-@router.delete("/user/{id}")
+@router.delete("/{id}")
 async def delete_user(
     id: int,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: Session,
+    current_user: CurrentUser,
 ):
     """
     Operação de delete de usuários na base.

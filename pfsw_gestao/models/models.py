@@ -1,9 +1,9 @@
-from sqlalchemy import Integer, String, func
-from sqlalchemy.orm import Mapped, mapped_column, registry
 from datetime import datetime
-from pydantic import EmailStr
 from typing import Optional
 
+from pydantic import EmailStr
+from sqlalchemy import Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, registry
 
 table_registry = registry()
 

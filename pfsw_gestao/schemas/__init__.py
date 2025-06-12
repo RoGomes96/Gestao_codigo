@@ -1,7 +1,8 @@
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, field_validator
 from pydantic.dataclasses import dataclass
-from typing import List, Optional
 
 
 class UserItem(BaseModel):
@@ -75,3 +76,8 @@ class UserList:
 class Token:
     access_token: str
     token_type: str
+
+
+class FilterPage(BaseModel):
+    offset: int = 0
+    limit: int = 100

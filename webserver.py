@@ -1,6 +1,8 @@
 from fastapi import FastAPI
-from pfsw_gestao.routes.router import router
 
+from pfsw_gestao.routes import auth, users
 
 app = FastAPI(title="Gestão de Código", version="0.0.1")
-app.include_router(router)
+
+app.include_router(users.router)
+app.include_router(auth.router)
