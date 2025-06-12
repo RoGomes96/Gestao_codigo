@@ -7,8 +7,29 @@ from fastapi.testclient import TestClient
 
 from pfsw_gestao.database import get_session
 from pfsw_gestao.models.models import User
+from pfsw_gestao.security import get_password_hash
 from webserver import app
 from pfsw_gestao.models import table_registry
+
+
+@pytest.fixture
+def user(session):
+    user = User(
+        username="RodrigoGomes",
+        first_name="Rodrigo",
+        last_name="Gomes",
+        email="Rodrigo@example.com",
+        password=get_password_hash("password@example"),
+        phone_number=1234567890,
+        address="Rua Teste",
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    user.clean_password = user.password
+
+    return user
 
 
 # Testes
@@ -68,3 +89,16 @@ def _mock_db_time(*, model, time=datetime(2025, 6, 5)):
 @pytest.fixture
 def mock_db_time():
     return _mock_db_time
+
+
+@pytest.fixture
+def token(client, user):
+    response = client.post(
+        f"/token/{user.id}",
+        data={"username": user.email, "password": "password@example"},
+    )
+    if response.status_code != 200:
+        raise ValueError(
+            f"Token request failed: {response.status_code}, {response.text}"
+        )
+    return response.json().get("access_token", None)

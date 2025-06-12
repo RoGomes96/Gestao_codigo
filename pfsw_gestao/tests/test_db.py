@@ -1,5 +1,7 @@
 from dataclasses import asdict
+from http import HTTPStatus
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from pfsw_gestao.models import User
 
@@ -37,3 +39,14 @@ class TestUserDB:
             "address": "",
             "created_at": time,
         }
+
+    def test_get_token(self, client, user, token, session: Session):
+        response = client.post(
+            f"/token/{user.id}",
+            data={"username": user.email, "password": "password@example"},
+        )
+        token = response.json()
+
+        assert response.status_code == HTTPStatus.OK
+        assert "access_token" in token
+        assert "token_type" in token

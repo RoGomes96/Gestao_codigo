@@ -14,6 +14,16 @@ class UserItem(BaseModel):
     address: Optional[str] = None
 
 
+class UserItemFullUpdate(BaseModel):
+    username: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+    phone_number: Optional[int] = 0
+    address: Optional[str] = None
+
+
 class UserDB(UserItem):
     id: int
 
@@ -59,3 +69,9 @@ class UserList:
     status_code: int
     message: str
     items: List[UserPublic]
+
+
+@dataclass
+class Token:
+    access_token: str
+    token_type: str
