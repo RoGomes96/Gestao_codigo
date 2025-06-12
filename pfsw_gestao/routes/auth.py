@@ -12,7 +12,7 @@ from pfsw_gestao.schemas import Token
 from pfsw_gestao.security import create_access_token, verify_password
 
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
-Session = Annotated[Session, Depends(get_session)]
+SessionUser = Annotated[Session, Depends(get_session)]
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 def login_for_access_token(
     id: int,
     form_data: OAuth2Form,
-    session: Session,
+    session: SessionUser,
 ):
     user = session.scalar(select(User).where(User.email == form_data.username))
 

@@ -21,7 +21,7 @@ from pfsw_gestao.security import (
     get_password_hash,
 )
 
-Session = Annotated[Session, Depends(get_session)]
+SessionUser = Annotated[Session, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -29,7 +29,7 @@ router = APIRouter(prefix='/users', tags=['users'])
 
 @router.get("/", response_model=UserList)
 async def list_user(
-    session: Session,
+    session: SessionUser,
     filter_users: Annotated[FilterPage, Query()]
 ):
     """
@@ -51,7 +51,7 @@ async def list_user(
 
 
 @router.post("/", response_model=UserPublic, status_code=201)
-async def create_user(user: UserItem, session: Session):
+async def create_user(user: UserItem, session: SessionUser):
     """
     Operação de criação de usuários na base.
     """
@@ -89,7 +89,7 @@ async def create_user(user: UserItem, session: Session):
 async def update_partial_user(
     id: int,
     user_update: UserItemUpdate,
-    session: Session,
+    session: SessionUser,
     current_user: CurrentUser,
 ):
     """
@@ -136,7 +136,7 @@ async def update_partial_user(
 async def update_full_user(
     id: int,
     update_user: UserItemFullUpdate,
-    session: Session,
+    session: SessionUser,
     current_user: CurrentUser,
 ):
     """
@@ -179,7 +179,7 @@ async def update_full_user(
 @router.delete("/{id}")
 async def delete_user(
     id: int,
-    session: Session,
+    session: SessionUser,
     current_user: CurrentUser,
 ):
     """
