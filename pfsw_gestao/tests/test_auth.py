@@ -1,12 +1,14 @@
 from http import HTTPStatus
+import pytest
 
 from sqlalchemy.orm import Session
 
 
 class TestAuth:
 
-    @staticmethod
-    def test_get_token(
+    @pytest.mark.asyncio
+    async def test_get_token(
+        self,
         client,
         user,
         token,

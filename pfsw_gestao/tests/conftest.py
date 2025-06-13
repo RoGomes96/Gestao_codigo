@@ -4,8 +4,9 @@ from http import HTTPStatus
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import StaticPool, create_engine, event
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from pfsw_gestao.database import get_session
 from pfsw_gestao.models import table_registry
@@ -14,8 +15,8 @@ from pfsw_gestao.security import get_password_hash
 from webserver import app
 
 
-@pytest.fixture
-def user(session):
+@pytest_asyncio.fixture
+async def user(session):
     user = User(
         username="RodrigoGomes",
         first_name="Rodrigo",
@@ -26,8 +27,8 @@ def user(session):
         address="Rua Teste",
     )
     session.add(user)
-    session.commit()
-    session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
 
     user.clean_password = user.password
 
@@ -36,10 +37,10 @@ def user(session):
 
 # Testes
 @pytest.fixture(scope="module")
-def test_db():
+async def test_db():
     # Configuração do banco de dados para testes
-    engine = create_engine(
-        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    engine = await create_engine(
+        'sqlite+aiosqlite:///:memory:', connect_args={"check_same_thread": False}
     )
     # Usando SQLite em memória
     table_registry.metadata.create_all(engine)  # Cria as tabelas
@@ -47,21 +48,21 @@ def test_db():
     table_registry.metadata.drop_all(engine)  # Limpa ao final do teste
 
 
-@pytest.fixture
-def session(test_db):
-    """Cria uma nova sessão para cada teste e limpa as tabelas."""
-    connection = test_db.connect()
-    Session = sessionmaker(bind=connection)
-    session = Session()
+@pytest_asyncio.fixture
+async def session():
+    engine = create_async_engine(
+        'sqlite+aiosqlite:///:memory:',
+        connect_args={'check_same_thread': False},
+        poolclass=StaticPool,
+    )
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.create_all)
 
-    session.query(User).delete()
-    session.commit()
-    session.commit()
+    async with AsyncSession(engine, expire_on_commit=False) as session:
+        yield session
 
-    yield session
-
-    session.close()
-    connection.close()
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.drop_all)
 
 
 @pytest.fixture
@@ -93,8 +94,8 @@ def mock_db_time():
     return _mock_db_time
 
 
-@pytest.fixture
-def token(client, user):
+@pytest_asyncio.fixture
+async def token(client, user):
     response = client.post(
         f"/auth/token/{user.id}",
         data={"username": user.email, "password": "password@example"},

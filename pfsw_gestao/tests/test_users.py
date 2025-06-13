@@ -1,6 +1,7 @@
 from dataclasses import asdict
 from http import HTTPStatus
 
+import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -52,8 +53,8 @@ class TestUsersEndpoint:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json()["detail"] == "Usuário já existe."
 
-    @staticmethod
-    def test_create_user_db(session, mock_db_time):
+    @pytest.mark.asyncio
+    async def test_create_user(self, session, mock_db_time):
         # Arrange
         with mock_db_time(model=User) as time:
             new_user = User(
@@ -67,10 +68,10 @@ class TestUsersEndpoint:
             )
 
             session.add(new_user)
-            session.commit()
+            await session.commit()
 
         # act
-        user = session.scalar(select(User).where(
+        user = await session.scalar(select(User).where(
             User.username == "RodrigoGomes"
             )
         )
@@ -89,19 +90,31 @@ class TestUsersEndpoint:
             "created_at": time,
         }
 
-    @staticmethod
-    def test_delete_user_sucess(client, user, token, session: Session):
+    @pytest.mark.asyncio
+    async def test_delete_user_sucess(
+        self,
+        client,
+        user,
+        token,
+        session: Session
+    ):
         # Act
         response = client.delete(
-            "/users/1",
+            f"/users/{user.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
         # Assert
         assert response.status_code == HTTPStatus.OK
         assert response.json()["message"] == "Usuário Deletado com sucesso"
 
-    @staticmethod
-    def test_delete_user_fail(client, user, token, session: Session):
+    @pytest.mark.asyncio
+    async def test_delete_user_fail(
+        self,
+        client,
+        user,
+        token,
+        session: Session
+    ):
         # Act
         response = client.delete(
             "/users/2", headers={"Authorization": f"Bearer {token}"}
@@ -179,8 +192,9 @@ class TestUsersEndpoint:
             "Usuário não existe na base de dados."
         )
 
-    @staticmethod
-    def test_update_total_user_sucess(
+    @pytest.mark.asyncio
+    async def test_update_total_user_sucess(
+        self,
         client,
         user,
         token,
@@ -201,7 +215,10 @@ class TestUsersEndpoint:
             headers={"Authorization": f"Bearer {token}"},
             json=user_update_data,
         )
-        updated_user = session.query(User).filter_by(id=user.id).first()
+        result = await session.execute(
+            select(User).where(User.id == user.id)
+        )
+        updated_user = result.scalar_one_or_none()
         # Assert
         assert verify_password(
             user_update_data["password"],

@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from pfsw_gestao.database import get_session
 from pfsw_gestao.models.models import User
@@ -21,7 +21,7 @@ from pfsw_gestao.security import (
     get_password_hash,
 )
 
-SessionUser = Annotated[Session, Depends(get_session)]
+SessionUser = Annotated[AsyncSession, Depends(get_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/users', tags=['users'])
@@ -35,11 +35,10 @@ async def list_user(
     """
     Operação de Listagem de todos os usuários da base.
     """
-    users = session.scalars(
-        select(User)
-        .offset(filter_users.offset)
-        .limit(filter_users.limit)
-    ).all()
+    query = await session.scalars(
+        select(User).offset(filter_users.offset).limit(filter_users.limit)
+    )
+    users = query.all()
     user_data = [UserPublic(**user.__dict__) for user in users]
 
     response = UserList(
@@ -55,7 +54,7 @@ async def create_user(user: UserItem, session: SessionUser):
     """
     Operação de criação de usuários na base.
     """
-    db_user = session.scalar(
+    db_user = await session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
         )
@@ -79,8 +78,8 @@ async def create_user(user: UserItem, session: SessionUser):
     )
 
     session.add(user_db)
-    session.commit()
-    session.refresh(user_db)
+    await session.commit()
+    await session.refresh(user_db)
 
     return UserPublic.from_orm(user_db)
 
@@ -95,7 +94,7 @@ async def update_partial_user(
     """
     Operação de update parcial de usuários na base.
     """
-    db_user = session.execute(select(User).where(User.id == id))
+    db_user = await session.execute(select(User).where(User.id == id))
     user = db_user.scalar_one_or_none()
 
     if user is None:
@@ -121,8 +120,8 @@ async def update_partial_user(
             user.phone_number = user_update.phone_number
         if user_update.address is not None:
             user.address = user_update.address
-        session.commit()
-        session.refresh(user)
+        await session.commit()
+        await session.refresh(user)
         return {
             "status_code": 200,
             "message": "Usuário Atualizado com sucesso",
@@ -142,7 +141,7 @@ async def update_full_user(
     """
     Operação de update total de usuários na base.
     """
-    db_user = session.execute(select(User).where(User.id == id))
+    db_user = await session.execute(select(User).where(User.id == id))
     user = db_user.scalar_one_or_none()
 
     if user is None:
@@ -164,8 +163,8 @@ async def update_full_user(
     user.address = update_user.address
 
     try:
-        session.commit()
-        session.refresh(user)
+        await session.commit()
+        await session.refresh(user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -185,7 +184,7 @@ async def delete_user(
     """
     Operação de delete de usuários na base.
     """
-    db_user = session.execute(select(User).where(User.id == id))
+    db_user = await session.execute(select(User).where(User.id == id))
     user = db_user.scalar_one_or_none()
 
     if not user:
@@ -199,7 +198,7 @@ async def delete_user(
             detail="Usuário sem permissão suficiente."
         )
 
-    session.delete(user)
-    session.commit()
+    await session.delete(current_user)
+    await session.commit()
 
     return {"status_code": 200, "message": "Usuário Deletado com sucesso"}

@@ -22,7 +22,6 @@ class TestApp:
             "/users/1",
             headers={"Authorization": "Bearer token"},
         )
-        print(response.json())
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
         assert response.json() == {"detail": "Could not validate credentials"}
