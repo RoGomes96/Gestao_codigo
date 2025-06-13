@@ -24,4 +24,6 @@ class TestApp:
         )
 
         assert response.status_code == HTTPStatus.UNAUTHORIZED
-        assert response.json() == {"detail": "Could not validate credentials"}
+        assert response.json() == {
+            "detail": "Não foi possivel verificar as credenciais."
+        }

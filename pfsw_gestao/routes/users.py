@@ -103,7 +103,8 @@ async def update_partial_user(
         )
     if current_user.id != id:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail="Not enough permissions"
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="Usuário sem permissão suficiente."
         )
     try:
         if user_update.username is not None:
@@ -144,13 +145,16 @@ async def update_full_user(
     db_user = await session.execute(select(User).where(User.id == id))
     user = db_user.scalar_one_or_none()
 
-    if user is None:
+    if not user:
         raise HTTPException(
-            status_code=400, detail="Usuário não existe na base de dados."
+            status_code=HTTPStatus.NOT_FOUND,
+            detail="Usuário não existe na base de dados.",
         )
+
     if current_user.id != id:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail="Not enough permissions"
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="Usuário sem permissão suficiente."
         )
 
     user.username = update_user.username

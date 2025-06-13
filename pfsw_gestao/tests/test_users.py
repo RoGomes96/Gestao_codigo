@@ -251,7 +251,7 @@ class TestUsersEndpoint:
         )
 
         # Assert
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.json()["detail"] == (
             "Usuário não existe na base de dados."
         )
@@ -276,3 +276,36 @@ class TestUsersEndpoint:
 
         # Assert
         assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+    @pytest.mark.asyncio
+    def test_update_user_with_wrong_user(self, client, other_user, token):
+        # Arrange
+        user_update_data = {
+            "username": "RoGomes",
+            "first_name": "Rodrigo",
+            "last_name": "Gomes",
+            "email": "Gomes@example.com",
+            "password": "password@example2",
+            "phone_number": PHONE_NUMBER_TEST,
+            "address": "Rua Teste Update",
+        }
+
+        response = client.put(
+            f'/users/{other_user.id}',
+            headers={'Authorization': f'Bearer {token}'},
+            json=user_update_data,
+        )
+        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert response.json() == {
+            'detail': 'Usuário sem permissão suficiente.'
+        }
+
+    def test_delete_user_wrong_user(self, client, other_user, token):
+        response = client.delete(
+            f'/users/{other_user.id}',
+            headers={'Authorization': f'Bearer {token}'},
+        )
+        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert response.json() == {
+            'detail': 'Usuário sem permissão suficiente.'
+        }

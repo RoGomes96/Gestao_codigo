@@ -4,7 +4,12 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jwt import DecodeError, decode, encode
+from jwt import (
+    DecodeError,
+    ExpiredSignatureError,
+    decode,
+    encode
+)
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +52,7 @@ async def get_current_user(
 ):
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Não foi possivel verificar as credenciais.",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
@@ -63,7 +68,14 @@ async def get_current_user(
 
     except DecodeError:
         raise credentials_exception
-    user = await session.scalar(select(User).where(User.email == subject_email))
+
+    except ExpiredSignatureError:
+        raise credentials_exception
+
+    user = await session.scalar(
+        select(User)
+        .where(User.email == subject_email)
+    )
 
     if not user:
         raise credentials_exception

@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from http import HTTPStatus
 
+import factory
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine, event
@@ -17,15 +18,8 @@ from webserver import app
 
 @pytest_asyncio.fixture
 async def user(session):
-    user = User(
-        username="RodrigoGomes",
-        first_name="Rodrigo",
-        last_name="Gomes",
-        email="Rodrigo@example.com",
-        password=get_password_hash("password@example"),
-        phone_number=1234567890,
-        address="Rua Teste",
-    )
+    password = 'password@example'
+    user = UserFactory(password=get_password_hash(password))
     session.add(user)
     await session.commit()
     await session.refresh(user)
@@ -35,12 +29,27 @@ async def user(session):
     return user
 
 
+@pytest_asyncio.fixture
+async def other_user(session):
+    password = 'password@example'
+    user = UserFactory(password=get_password_hash(password))
+
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    user.clean_password = password
+
+    return user
+
+
 # Testes
 @pytest.fixture(scope="module")
 async def test_db():
     # Configuração do banco de dados para testes
     engine = await create_engine(
-        'sqlite+aiosqlite:///:memory:', connect_args={"check_same_thread": False}
+        'sqlite+aiosqlite:///:memory:',
+        connect_args={"check_same_thread": False}
     )
     # Usando SQLite em memória
     table_registry.metadata.create_all(engine)  # Cria as tabelas
@@ -105,3 +114,16 @@ async def token(client, user):
             f"Token request failed: {response.status_code}, {response.text}"
         )
     return response.json().get("access_token", None)
+
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User
+
+    username = factory.Sequence(lambda n: f'test{n}')
+    first_name = factory.Sequence(lambda n: f'User{n}')
+    last_name = factory.Sequence(lambda n: f'Last{n}')
+    email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
+    password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
+    phone_number = factory.Sequence(lambda n: int(f"1234{n}"))
+    address = factory.Sequence(lambda n: f'Rua {n}')
