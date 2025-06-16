@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from pfsw_gestao.models.models import User
 from pfsw_gestao.security import verify_password
 
-PHONE_NUMBER_TEST = 11123456789
+PHONE_NUMBER_TEST = "11123456789"
 
 
 class TestUsersEndpoint:
@@ -31,7 +31,7 @@ class TestUsersEndpoint:
         assert response.json()["first_name"] == user_data["first_name"]
         assert response.json()["last_name"] == user_data["last_name"]
         assert response.json()["email"] == user_data["email"]
-        assert response.json()["phone_number"] == 0
+        assert response.json()["phone_number"] == "0"
 
     @staticmethod
     def test_create_user_fail(client, session: Session):
@@ -97,23 +97,26 @@ class TestUsersEndpoint:
             "last_name": "Gomes",
             "email": "rodrigogomes@example.com",
             "password": "password@example",
-            "phone_number": 0,
+            "phone_number": "0",
         }
 
-        client.post("/users/", json=user_data)
+        post_response = client.post("/users/", json=user_data)
+        assert post_response.status_code == HTTPStatus.CREATED
         # Act
         response = client.get("/users/")
+        created_user = post_response.json()
+        created_user_id = created_user["id"]
 
         # Arrange
         assert response.status_code == HTTPStatus.OK
         assert len(response.json()["items"]) == 1
-        assert response.json()["items"][0]["id"] == 1
+        assert response.json()["items"][0]["id"] == created_user_id
         assert response.json()["items"][0]["first_name"] == "Rodrigo"
         assert response.json()["items"][0]["last_name"] == "Gomes"
         assert response.json()["items"][0]["email"] == (
             "rodrigogomes@example.com"
         )
-        assert response.json()["items"][0]["phone_number"] == 0
+        assert response.json()["items"][0]["phone_number"] == "0"
 
     @staticmethod
     def test_update_partial_user_sucess(client, user, token):
@@ -128,6 +131,7 @@ class TestUsersEndpoint:
             headers={"Authorization": f"Bearer {token}"},
             json=user_update_data,
         )
+        print(response.json())
         # Assert
         assert response.json()["new_item"]["phone_number"] == PHONE_NUMBER_TEST
         assert response.json()["new_item"]["address"] == "Rua Teste 2"

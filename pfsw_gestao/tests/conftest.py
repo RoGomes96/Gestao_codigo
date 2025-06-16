@@ -1,19 +1,57 @@
 from contextlib import contextmanager
 from datetime import datetime
 from http import HTTPStatus
+from testcontainers.postgres import PostgresContainer
 
 import factory
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import StaticPool, create_engine, event
+from sqlalchemy import event
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine
+)
 
 from pfsw_gestao.database import get_session
-from pfsw_gestao.models import table_registry
+from pfsw_gestao.models.base import Base
 from pfsw_gestao.models.models import User
 from pfsw_gestao.security import get_password_hash
 from webserver import app
+import asyncio
+import sys
+
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """
+    Fixture que força o pytest-asyncio a usar um loop de sessão,
+    compatível com fixtures de escopo session como `engine`.
+    """
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest_asyncio.fixture(scope="session")
+async def engine():
+    container = PostgresContainer('postgres:16', driver='psycopg')
+    container.start()
+    _engine = create_async_engine(container.get_connection_url())
+    yield _engine
+    await _engine.dispose()
+    container.stop()
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def clean_db(session):
+    # Para PostgreSQL: desativa constraints e limpa tudo
+    for table in reversed(Base.metadata.sorted_tables):
+        await session.execute(table.delete())
+    await session.commit()
 
 
 @pytest_asyncio.fixture
@@ -43,35 +81,16 @@ async def other_user(session):
     return user
 
 
-# Testes
-@pytest.fixture(scope="module")
-async def test_db():
-    # Configuração do banco de dados para testes
-    engine = await create_engine(
-        'sqlite+aiosqlite:///:memory:',
-        connect_args={"check_same_thread": False}
-    )
-    # Usando SQLite em memória
-    table_registry.metadata.create_all(engine)  # Cria as tabelas
-    yield engine
-    table_registry.metadata.drop_all(engine)  # Limpa ao final do teste
-
-
-@pytest_asyncio.fixture
-async def session():
-    engine = create_async_engine(
-        'sqlite+aiosqlite:///:memory:',
-        connect_args={'check_same_thread': False},
-        poolclass=StaticPool,
-    )
+@pytest_asyncio.fixture(scope="function")
+async def session(engine):
     async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
     async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture
@@ -80,8 +99,10 @@ def client(session):
         yield session
 
     app.dependency_overrides[get_session] = override_get_db
+
     with TestClient(app) as c:
         yield c
+
     app.dependency_overrides.clear()
 
 
@@ -125,5 +146,5 @@ class UserFactory(factory.Factory):
     last_name = factory.Sequence(lambda n: f'Last{n}')
     email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
     password = factory.LazyAttribute(lambda obj: f'{obj.username}@example.com')
-    phone_number = factory.Sequence(lambda n: int(f"1234{n}"))
+    phone_number = factory.Sequence(lambda n: f"1234{n}")
     address = factory.Sequence(lambda n: f'Rua {n}')

@@ -32,7 +32,7 @@ class TestAuth:
             "last_name": "errado",
             "email": "errado@example.com",
             "password": "errado@example",
-            "phone_number": 0,
+            "phone_number": "0",
             "adress": "Rua errada"
         }
         with freeze_time('2025-06-13 12:00:00'):

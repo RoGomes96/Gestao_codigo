@@ -13,7 +13,7 @@ class UserItem(BaseModel):
     last_name: str
     email: EmailStr
     password: str
-    phone_number: Optional[int] = 0
+    phone_number: Optional[str] = "0"
     address: Optional[str] = None
 
 
@@ -23,7 +23,7 @@ class UserItemFullUpdate(BaseModel):
     last_name: str
     email: EmailStr
     password: str
-    phone_number: Optional[int] = 0
+    phone_number: Optional[str] = "0"
     address: Optional[str] = None
 
 
@@ -38,13 +38,8 @@ class UserItemUpdate:
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
-    phone_number: Optional[int] = 0
+    phone_number: Optional[str] = "0"
     address: Optional[str] = None
-
-
-@field_validator("phone_number", mode="before")
-def set_default_phone_number(cls, v):
-    return v if v is not None else 0  # Retorna 0 se o valor for None
 
 
 class UserPublic(BaseModel):
@@ -53,7 +48,7 @@ class UserPublic(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    phone_number: Optional[int] = None
+    phone_number: Optional[str] = "0"
     created_at: Optional[datetime] = datetime.utcnow()
 
     class Config:

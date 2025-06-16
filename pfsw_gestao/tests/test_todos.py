@@ -26,12 +26,11 @@ class TestTodoEndpoint:
                 'state': 'draft',
             },
         )
-        assert response.json() == {
-            'id': 1,
-            'title': 'Test todo',
-            'description': 'Test todo description',
-            'state': 'draft',
-        }
+        response_json = response.json()
+        assert response_json['title'] == 'Test todo'
+        assert response_json['description'] == 'Test todo description'
+        assert response_json['state'] == 'draft'
+        assert 'id' in response_json
 
     @pytest.mark.asyncio
     async def test_list_todos_should_return_5_todos(

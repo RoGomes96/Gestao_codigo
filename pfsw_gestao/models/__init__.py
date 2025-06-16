@@ -1,3 +1,4 @@
-from .models import User, table_registry
+from .base import Base
+from .models import User, Todo
 
-__all__ = ["User", "table_registry"]
+__all__ = ["Base", "User", "Todo"]
