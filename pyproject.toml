@@ -1,3 +1,7 @@
+[project]
+name = "gestao_codigo"
+version = "1.0.0"
+
 [tool.poetry]
 name = "gestao_codigo"
 version = "0.2.0"

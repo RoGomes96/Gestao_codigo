@@ -1,3 +1,27 @@
+## 1.0.0 (2025-06-16)
+
+### BREAKING CHANGE
+
+- SDIT-0005/GW-00005
+- SDIT-0005/GW-00005
+- SDIT-0002/GW-00002
+
+### Feat
+
+- **Migrations-and-docker**: Inclusão de migrations de novas tabelas, inclusão de docker e ajuste de conftest
+- **To-dos-endpoints**: Implementação de endpoints e testes para inserção de tarefas
+- **Token-Refresh-and-auth-tests**: Implementando o refresh do token e testes de autorização
+- **Session-Assync**: Suporte a asyncio, tornando o projeto não bloqueante
+- **Autentication**: Inclusão de validação de token jwt
+- **Inclusão-de-banco-de-dados**: Inclusão de banco de dados sqlalchemy e alembic e alteração das rotas e testes de rotas
+- **Inclusão-de-banco-de-dados**: Inclusão de configurações do banco de dados e criação inicial de tabela
+
+### Fix
+
+- **SessionUser**: Alteracao de nome de variavel Session
+- **Update-Total-de-users**: Alteração para ajuste de erro
+- Inclusão de data de criação e inicio global do TestClient
+
 ## 0.2.0 (2025-06-04)
 
 ### Feat
