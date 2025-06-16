@@ -1,6 +1,10 @@
+from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, EmailStr, field_validator
 from pydantic.dataclasses import dataclass
-from typing import List, Optional
+
+from pfsw_gestao.models.models import TodoState
 
 
 class UserItem(BaseModel):
@@ -9,7 +13,17 @@ class UserItem(BaseModel):
     last_name: str
     email: EmailStr
     password: str
-    phone_number: Optional[int] = 0
+    phone_number: Optional[str] = "0"
+    address: Optional[str] = None
+
+
+class UserItemFullUpdate(BaseModel):
+    username: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+    phone_number: Optional[str] = "0"
     address: Optional[str] = None
 
 
@@ -24,23 +38,21 @@ class UserItemUpdate:
     last_name: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None
-    phone_number: Optional[int] = 0
+    phone_number: Optional[str] = "0"
     address: Optional[str] = None
 
 
-@field_validator("phone_number", mode="before")
-def set_default_phone_number(cls, v):
-    return v if v is not None else 0  # Retorna 0 se o valor for None
-
-
-@dataclass
-class UserPublic:
+class UserPublic(BaseModel):
     id: int
     username: str
     first_name: str
     last_name: str
     email: EmailStr
-    phone_number: Optional[int] = None
+    phone_number: Optional[str] = "0"
+    created_at: Optional[datetime] = datetime.utcnow()
+
+    class Config:
+        from_attributes = True
 
 
 @dataclass
@@ -55,3 +67,44 @@ class UserList:
     status_code: int
     message: str
     items: List[UserPublic]
+
+
+@dataclass
+class Token:
+    access_token: str
+    token_type: str
+
+
+class FilterPage(BaseModel):
+    offset: int = 0
+    limit: int = 100
+
+
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    state: TodoState
+
+
+class TodoPublic(TodoSchema):
+    id: int
+
+
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
+
+
+class FilterTodo(FilterPage):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class Message(BaseModel):
+    message: str
