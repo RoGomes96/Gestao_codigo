@@ -4,6 +4,8 @@ from typing import List, Optional
 from pydantic import BaseModel, EmailStr, field_validator
 from pydantic.dataclasses import dataclass
 
+from pfsw_gestao.models.models import TodoState
+
 
 class UserItem(BaseModel):
     username: str
@@ -81,3 +83,33 @@ class Token:
 class FilterPage(BaseModel):
     offset: int = 0
     limit: int = 100
+
+
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    state: TodoState
+
+
+class TodoPublic(TodoSchema):
+    id: int
+
+
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
+
+
+class FilterTodo(FilterPage):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class Message(BaseModel):
+    message: str

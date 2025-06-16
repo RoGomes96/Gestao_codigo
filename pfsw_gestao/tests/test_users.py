@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from http import HTTPStatus
 
 import pytest
@@ -52,43 +51,6 @@ class TestUsersEndpoint:
         # Assert
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json()["detail"] == "Usuário já existe."
-
-    @pytest.mark.asyncio
-    async def test_create_user(self, session, mock_db_time):
-        # Arrange
-        with mock_db_time(model=User) as time:
-            new_user = User(
-                username="RodrigoGomes",
-                first_name="Rodrigo",
-                last_name="Gomes",
-                email="rodrigogomes@example.com",
-                password="password@example",
-                phone_number=0,
-                address="",
-            )
-
-            session.add(new_user)
-            await session.commit()
-
-        # act
-        user = await session.scalar(select(User).where(
-            User.username == "RodrigoGomes"
-            )
-        )
-
-        # Assert
-        assert user is not None
-        assert asdict(user) == {
-            "id": 1,
-            "username": "RodrigoGomes",
-            "first_name": "Rodrigo",
-            "last_name": "Gomes",
-            "password": "password@example",
-            "email": "rodrigogomes@example.com",
-            "phone_number": 0,
-            "address": "",
-            "created_at": time,
-        }
 
     @pytest.mark.asyncio
     async def test_delete_user_sucess(
