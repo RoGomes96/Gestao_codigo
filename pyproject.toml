@@ -43,7 +43,7 @@ freezegun = "^1.5.2"
 testcontainers = "^4.11.0"
 
 [tool.poetry.scripts]
-test = "pytest"
+test = "pytest:main"
 
 [tool.coverage.run]
 concurrency = ["thread", "greenlet"]
