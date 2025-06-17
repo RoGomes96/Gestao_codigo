@@ -42,6 +42,9 @@ factory-boy = "^3.3.3"
 freezegun = "^1.5.2"
 testcontainers = "^4.11.0"
 
+[tool.poetry.scripts]
+test = "pytest"
+
 [tool.coverage.run]
 concurrency = ["thread", "greenlet"]
 
